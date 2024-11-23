@@ -1,0 +1,72 @@
+/* Etiquetas más pequeñas */
+.form-label {
+    font-weight: bold;
+    color: #333;
+    font-size: 0.85rem;  /* Fuente más pequeña */
+    width: 100%;
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Estilo de los campos de entrada más pequeños */
+.form-control {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px; /* Menos padding para que ocupe menos espacio */
+    font-size: 1rem;  /* Tamaño de fuente más pequeño */
+    width: 100%;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+/* Ajustes para el contenedor de los campos */
+.mb-3 {
+    margin-bottom: 15px;  /* Menor espacio entre los campos */
+    max-width: 100%;
+    width: 100%;
+}
+
+/* Ajustar imagen para que no ocupe demasiado espacio */
+img {
+    border-radius: 8px;
+    margin-top: 10px;
+    margin-left: auto;
+    display: block;
+    margin-right: auto;
+    max-width: 100%;  /* Asegura que la imagen no se desborde */
+}
+
+/* Ajuste para el campo de entrada de archivo */
+input[type="file"] {
+    font-size: 0.9rem;  /* Fuente más pequeña en el input de tipo file */
+    padding: 5px;  /* Menos espacio en el campo de archivo */
+    width: 100%;  /* Asegura que ocupe todo el ancho disponible */
+    box-sizing: border-box;
+}
+
+/* Estilo para el botón de submit */
+.btn-success {
+    background-color: #28a745;
+    border: 1px solid #28a745;
+    color: white;
+    padding: 8px 16px;  /* Menos padding en el botón */
+    font-size: 0.9rem;  /* Fuente más pequeña en el botón */
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: 1px solid #007bff;
+    color: white;
+    padding: 8px 16px;  /* Menos padding en el botón */
+    font-size: 0.9rem;  /* Fuente más pequeña en el botón */
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+}
