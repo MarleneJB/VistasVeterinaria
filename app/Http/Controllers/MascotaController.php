@@ -1,15 +1,16 @@
 <?php
 
 namespace App\Http\Controllers;
-use Illuminate\Support\Facades\Storage;
+
 use App\Models\Mascota;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+
 class MascotaController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-
         try {
             $mascotas = Mascota::all();
 
@@ -18,156 +19,133 @@ class MascotaController extends Controller
                     $mascota->imagen = asset('storage/' . $mascota->imagen);
                 }
             });
-            if ($request->ajax()) {
-                // Si la solicitud es AJAX, retorna JSON
-                return response()->json($mascotas, 200);
-            }
 
             return view('mascotas.index', compact('mascotas'));
-
-
         } catch (\Exception $e) {
-            Log::error("Error al obtener las mascotas: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al obtener las mascotas'], 500);
-
+            return back()->with('error', 'Error al cargar la lista de mascotas: ' . $e->getMessage());
         }
-
     }
 
-        public function create()
-        {
-          return view('mascotas.create');
-        }
-
-
-
-    public function show(string $id)
+    public function create()
     {
         try {
-            $mascota = Mascota::findOrFail($id);
-
-            if ($mascota->imagen) {
-                $mascota->imagen = asset('storage/' . $mascota->imagen);
-            }
-
-            return response()->json($mascota, 200);
+            return view('mascotas.create');
         } catch (\Exception $e) {
-            Log::error("Error al mostrar la mascota: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al mostrar la mascota'], 500);
+            return back()->with('error', 'Error al cargar el formulario de creación: ' . $e->getMessage());
         }
     }
 
     public function store(Request $request)
     {
         try {
-            $request->validate([
-                'nombre' => 'required|string|max:100',
-                'especie' => 'required|string|max:50',
-                'raza' => 'nullable|string|max:50',
-                'edad' => 'required|integer',
-                'nombre_dueno' => 'required|string|max:100',
-                'telefono' => 'required|string|max:15',
-                'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:4096',
+            $validatedData = $request->validate([
+                'nombre' => 'required|string|max:255',
+                'especie' => 'required|string|max:255',
+                'raza' => 'required|string|max:255',
+                'edad' => 'required|integer|min:0',
+                'nombre_dueno' => 'required|string|max:255',
+                'telefono' => 'required|string|max:10',
+                'imagen' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ]);
 
-
-            $imagenPath = null;
-            if ($request->hasFile('imagen')) {
-
-                $imagenPath = $request->file('imagen')->store('imagenes/mascotas', 'public');
+            if ($request->hasFile('image')) {
+                $validatedData['imagen'] = $request->file('imagen')->store('mascotas_imagenes', 'public');
             }
 
-            $mascota = Mascota::create(array_merge($request->all(), ['imagen' => $imagenPath]));
+            Mascota::create($validatedData);
 
-
-
-            return redirect()->route('mascotas.index')->with('Mensaje', 'Mascota creada exitosamente.');
+            return redirect()->route('mascotas.index')->with('success', 'Mascota creada con éxito.');
         } catch (\Exception $e) {
-            Log::error("Error al crear la mascota: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al crear la mascota'], 500);
+            return back()->with('error', 'Error al guardar la mascota: ' . $e->getMessage());
+        }
+    }
+
+    public function show($id)
+    {
+        try {
+            $mascota = Mascota::findOrFail($id);
+            return view('mascotas.show', compact('mascota'));
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('mascotas.index')->with('error', 'Mascota no encontrada.');
+        } catch (\Exception $e) {
+            return redirect()->route('mascotas.index')->with('error', 'Error al mostrar la mascota: ' . $e->getMessage());
         }
     }
 
     public function edit($id)
-{
-    try {
-        // Buscar la mascota por su ID
-        $mascota = Mascota::findOrFail($id);
-
-        // Retornar la vista con los datos de la mascota
-        return view('mascotas.edit', compact('mascota'));
-    } catch (\Exception $e) {
-        Log::error("Error al cargar el formulario de edición: " . $e->getMessage());
-
-        // Enviar al usuario un error si no se encuentra la mascota
-        return redirect()->route('mascotas.index')->withErrors(['error' => 'Mascota no encontrada.']);
-    }
-}
-
-    public function update(Request $request, string $id)
     {
         try {
             $mascota = Mascota::findOrFail($id);
+            return view('mascotas.edit', compact('mascota'));
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('mascotas.index')->with('error', 'Mascota no encontrada.');
+        } catch (\Exception $e) {
+            return redirect()->route('mascotas.index')->with('error', 'Error al cargar el formulario de edición: ' . $e->getMessage());
+        }
+    }
 
-            $request->validate([
-                'nombre' => 'sometimes|string|max:100',
-                'especie' => 'sometimes|string|max:50',
-                'raza' => 'nullable|string|max:50',
-                'edad' => 'sometimes|integer',
-                'nombre_dueno' => 'sometimes|string|max:100',
-                'telefono' => 'sometimes|string|max:15',
-                'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    public function update(Request $request, $id)
+    {
+        try {
+            $validatedData = $request->validate([
+                'nombre' => 'required|string|max:255',
+                'especie' => 'required|string|max:255',
+                'raza' => 'required|string|max:255',
+                'edad' => 'required|integer|min:0',
+                'nombre_dueno' => 'required|string|max:255',
+                'telefono' => 'required|string|max:10',
+                'imagen' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ]);
+
+            $mascota = Mascota::findOrFail($id);
 
             if ($request->hasFile('imagen')) {
                 if ($mascota->imagen) {
-                    Storage::disk('public')->delete($mascota->imagen);
+                    Storage::delete('public/' . $mascota->imagen);
                 }
-                $mascota->imagen = $request->file('imagen')->store('imagenes/mascotas', 'public');
+                $validatedData['imagen'] = $request->file('imagen')->store('mascotas_imagenes', 'public');
             }
 
-            $mascota->update($request->except('imagen'));
-            return redirect()->route('mascotas.index')->with('Mensaje', 'Mascota actualizada exitosamente.');
+            $mascota->update($validatedData);
+
+            return redirect()->route('mascotas.index')->with('success', 'Mascota actualizada con éxito.');
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('mascotas.index')->with('error', 'Mascota no encontrada.');
         } catch (\Exception $e) {
-            Log::error("Error al actualizar la mascota: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al actualizar la mascota'], 500);
+            return back()->with('error', 'Error al actualizar la mascota: ' . $e->getMessage());
         }
     }
 
-
-    public function destroy(string $id)
+    public function destroy($id)
     {
         try {
             $mascota = Mascota::findOrFail($id);
+
+            if ($mascota->imagen) {
+                Storage::delete('public/' . $mascota->imagen);
+            }
+
             $mascota->delete();
 
-            return redirect()->route('mascotas.index')->with('success', 'Mascota eliminada exitosamente.');
+            return redirect()->route('mascotas.index')->with('success', 'Mascota eliminada con éxito.');
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('mascotas.index')->with('error', 'Mascota no encontrada.');
         } catch (\Exception $e) {
-            Log::error("Error al eliminar la mascota: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al eliminar la mascota'], 500);
+            return back()->with('error', 'Error al eliminar la mascota: ' . $e->getMessage());
         }
     }
 
-    public function indexWithTrashed()
-    {
-        try {
-            $mascotas = Mascota::withTrashed()->get();
-            return response()->json($mascotas, 200);
-        } catch (\Exception $e) {
-            Log::error("Error al obtener todas las mascotas, incluidos los eliminados: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al obtener las mascotas'], 500);
-        }
-    }
-
-    public function restore(string $id)
+    public function restore($id)
     {
         try {
             $mascota = Mascota::withTrashed()->findOrFail($id);
             $mascota->restore();
-            return response()->json($mascota, 200);
+
+            return redirect()->route('mascotas.index')->with('success', 'Mascota restaurada correctamente.');
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('mascotas.index')->with('error', 'Mascota no encontrada para restaurar.');
         } catch (\Exception $e) {
-            Log::error("Error al restaurar la mascota: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al restaurar la mascota'], 500);
+            return redirect()->route('mascotas.index')->with('error', 'Error al restaurar la mascota: ' . $e->getMessage());
         }
     }
 }

@@ -4,132 +4,115 @@ namespace App\Http\Controllers;
 
 use App\Models\Servicio;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ServicioController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
         try {
             $servicios = Servicio::all();
-
-            if ($request->ajax()) {
-                return response()->json($servicios, 200);
-            }
-
-
             return view('servicios.index', compact('servicios'));
-
         } catch (\Exception $e) {
-            Log::error("Error al obtener los servicios: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al obtener los servicios'], 500);
+            return back()->with('error', 'Error al cargar los servicios: ' . $e->getMessage());
         }
     }
 
     public function create()
     {
-      return view('servicios.create');
+        try {
+            return view('servicios.create');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al cargar el formulario de creación: ' . $e->getMessage());
+        }
     }
-
 
     public function store(Request $request)
     {
         try {
             $request->validate([
                 'nombre' => 'required|string|max:255',
-                'descripcion' => 'nullable|string|max:1000',
+                'descripcion' => 'required|string',
                 'precio' => 'required|numeric|min:0',
             ]);
 
-            $servicio = Servicio::create($request->all());
+            Servicio::create($request->all());
 
-            return redirect()->route('servicios.index')->withErrors(['error' => 'Servicio no agregado']);
+            return redirect()->route('servicios.index')->with('success', 'Servicio creado con éxito.');
         } catch (\Exception $e) {
-            Log::error("Error al crear el servicio: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al crear el servicio'], 500);
+            return back()->with('error', 'Error al guardar el servicio: ' . $e->getMessage());
         }
     }
 
-    public function show(string $id)
+    public function show($id)
     {
         try {
             $servicio = Servicio::findOrFail($id);
-            return response()->json($servicio, 200);
+            return view('servicios.show', compact('servicio'));
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('servicios.index')->with('error', 'Servicio no encontrado.');
         } catch (\Exception $e) {
-            Log::error("Error al mostrar el servicio: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al mostrar el servicio'], 500);
+            return redirect()->route('servicios.index')->with('error', 'Error al mostrar el servicio: ' . $e->getMessage());
         }
     }
-
 
     public function edit($id)
     {
         try {
-            // Buscar la mascota por su ID
             $servicio = Servicio::findOrFail($id);
-
-            // Retornar la vista con los datos de la mascota
             return view('servicios.edit', compact('servicio'));
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('servicios.index')->with('error', 'Servicio no encontrado.');
         } catch (\Exception $e) {
-            Log::error("Error al cargar el formulario de edición: " . $e->getMessage());
-
-            // Enviar al usuario un error si no se encuentra la mascota
-            return redirect()->route('servicios.index')->withErrors(['error' => 'Servicio no encontrado.']);
+            return redirect()->route('servicios.index')->with('error', 'Error al cargar el formulario de edición: ' . $e->getMessage());
         }
     }
 
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
         try {
-            $servicio = Servicio::findOrFail($id);
-
             $request->validate([
-                'nombre' => 'sometimes|string|max:255',
-                'descripcion' => 'nullable|string|max:1000',
-                'precio' => 'sometimes|numeric|min:0',
+                'nombre' => 'required|string|max:255',
+                'descripcion' => 'required|string',
+                'precio' => 'required|numeric|min:0',
             ]);
 
+            $servicio = Servicio::findOrFail($id);
             $servicio->update($request->all());
 
-            return redirect()->route('servicios.index')->withErrors(['error' => 'Servicio no encontrado.']);
+            return redirect()->route('servicios.index')->with('success', 'Servicio actualizado con éxito.');
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('servicios.index')->with('error', 'Servicio no encontrado.');
         } catch (\Exception $e) {
-            Log::error("Error al actualizar el servicio: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al actualizar el servicio'], 500);
+            return back()->with('error', 'Error al actualizar el servicio: ' . $e->getMessage());
         }
     }
 
-    public function destroy(string $id)
+    public function destroy($id)
     {
         try {
             $servicio = Servicio::findOrFail($id);
             $servicio->delete();
-            return response()->json(null, 204);
+
+            return redirect()->route('servicios.index')->with('success', 'Servicio eliminado con éxito.');
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('servicios.index')->with('error', 'Servicio no encontrado.');
         } catch (\Exception $e) {
-            Log::error("Error al eliminar el servicio: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al eliminar el servicio'], 500);
+            return back()->with('error', 'Error al eliminar el servicio: ' . $e->getMessage());
         }
     }
 
-    public function indexWithTrashed()
-    {
-        try {
-            $servicios = Servicio::withTrashed()->get();
-            return response()->json($servicios, 200);
-        } catch (\Exception $e) {
-            Log::error("Error al obtener todos los servicios, incluidos los eliminados: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al obtener los servicios'], 500);
-        }
-    }
-
-    public function restore(string $id)
+    public function restore($id)
     {
         try {
             $servicio = Servicio::withTrashed()->findOrFail($id);
             $servicio->restore();
-            return response()->json($servicio, 200);
+
+            return redirect()->route('servicios.index')->with('success', 'Servicio restaurado correctamente.');
+        } catch (ModelNotFoundException $e) {
+            return redirect()->route('servicios.index')->with('error', 'Servicio no encontrado para restaurar.');
         } catch (\Exception $e) {
-            Log::error("Error al restaurar el servicio: " . $e->getMessage());
-            return response()->json(['error' => 'Ocurrió un error al restaurar el servicio'], 500);
+            return redirect()->route('servicios.index')->with('error', 'Error al restaurar el servicio: ' . $e->getMessage());
         }
     }
 }
