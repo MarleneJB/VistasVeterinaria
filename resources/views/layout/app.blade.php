@@ -15,6 +15,7 @@
         <a href="/mascotas">Mascotas</a> |
         <a href="/servicios">Servicios</a> |
         <a href="/citas">Citas</a>
+        <a href="/historial">Historial Mascotas</a></a>
         <a href="/trashed">Eliminados</a>
     </nav>
     <main div class= container-section>

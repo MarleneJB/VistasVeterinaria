@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\HistorialController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MascotaController;
 use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\CitaController;
 use App\Http\Controllers\TrashedController;
+
 
 // Ruta principal
 Route::get('/', function () {
@@ -15,7 +17,7 @@ Route::get('/', function () {
 Route::resource('mascotas', MascotaController::class);
 Route::resource('servicios', ServicioController::class);
 Route::resource('citas', CitaController::class);
-
+Route::resource('historial', HistorialController::class);
 // Rutas para elementos eliminados (trashed)
 Route::get('/trashed', [TrashedController::class, 'index'])->name('trashed.index');
 
@@ -23,3 +25,4 @@ Route::get('/trashed', [TrashedController::class, 'index'])->name('trashed.index
 Route::post('/mascotas/{id}/restore', [MascotaController::class, 'restore'])->name('mascotas.restore');
 Route::post('/servicios/{id}/restore', [ServicioController::class, 'restore'])->name('servicios.restore');
 Route::post('/citas/{id}/restore', [CitaController::class, 'restore'])->name('citas.restore');
+Route::post('/historial/{id}/restore', [HistorialController::class, 'restore'])->name('historial.restore');

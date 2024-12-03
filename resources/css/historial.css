@@ -1,0 +1,100 @@
+/* Contenedor principal */
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+
+}
+
+
+.btn-primary {
+    background-color: #b7d5ed;
+    border-radius: 10px;
+    border: 10px;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #bc874d;
+}
+
+/* Tabla */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    text-align: left;
+    background-color: #f9f9f9;
+}
+
+.table th,
+.table td {
+    padding: 15px;
+    border: 1px solid #ddd;
+}
+
+.table th {
+    background-color: #a3d1ec;
+    color: #002655;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.table td {
+    color: #333;
+    text-align: center;
+}
+
+/* Estilo para las imágenes */
+.table img {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Botones de acción */
+.btn-warning, .btn-danger {
+    padding: 5px 10px;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.btn-warning {
+    background-color: #4dbc50;
+    color: #000;
+}
+
+.btn-warning:hover {
+    opacity: 0.8;
+}
+
+.btn-danger {
+    background-color: #bc4d82;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    opacity: 0.8;
+}
+
+/* Formularios en línea */
+form {
+    display: inline-block;
+}
